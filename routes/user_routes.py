@@ -1,16 +1,24 @@
 from flask import request, jsonify
 from data_store import users, user_id_counter
+from marshmallow import ValidationError
+from schemas import UserSchema
+
+user_schema = UserSchema()
 
 def init_app(app):
     
     @app.route('/user', methods=['POST'])
     def create_user():
         global user_id_counter
-        data = request.get_json()
-        user = {'id': user_id_counter, 'name': data['name']}
-        users[user_id_counter] = user
-        user_id_counter += 1
-        return jsonify({'message': 'User created', 'user_id': user['id']}), 201
+        try:
+            data = request.get_json()
+            validated_data = user_schema.load(data)
+            user = {'id': user_id_counter, 'name': validated_data['name']}
+            users[user_id_counter] = user
+            user_id_counter += 1
+            return jsonify({'message': 'User created', 'user_id': user['id']}), 201
+        except ValidationError as err:
+            return jsonify({'errors': err.messages}), 400
 
     @app.route('/user/<int:user_id>', methods=['GET'])
     def get_user(user_id):
