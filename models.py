@@ -1,6 +1,12 @@
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-db = SQLAlchemy()
+app = Flask(__name__)
+app.config.from_pyfile('./options.py', silent=True)
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class User(db.Model):
     __tablename__ = 'users'
