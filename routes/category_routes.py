@@ -1,16 +1,24 @@
 from flask import request, jsonify
 from data_store import categories, category_id_counter
+from marshmallow import ValidationError
+from schemas import CategorySchema
+
+category_schema = CategorySchema()
 
 def init_app(app):
     
     @app.route('/category', methods=['POST'])
     def create_category():
         global category_id_counter
-        data = request.get_json()
-        category = {'id': category_id_counter, 'name': data['name']}
-        categories[category_id_counter] = category
-        category_id_counter += 1
-        return jsonify({'message': 'Category created', 'category_id': category['id']}), 201
+        try:
+            data = request.get_json()
+            validated_data = category_schema.load(data)
+            category = {'id': category_id_counter, 'name': validated_data['name']}
+            categories[category_id_counter] = category
+            category_id_counter += 1
+            return jsonify({'message': 'Category created', 'category_id': category['id']}), 201
+        except ValidationError as err:
+            return jsonify({'errors': err.messages}), 400
 
     @app.route('/category', methods=['GET'])
     def get_categories():
