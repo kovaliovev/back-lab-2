@@ -7,6 +7,8 @@ class UserSchema(Schema):
 class CategorySchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
+    is_global = fields.Bool(required=False, default=True)
+    user_id = fields.Int(required=False, allow_none=True)
 
 class RecordSchema(Schema):
     id = fields.Int(dump_only=True)
